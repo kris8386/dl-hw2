@@ -49,7 +49,7 @@ def train(
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     global_step = 0
-    metrics = {"train_acc": [], "val_acc": []}
+    metrics = {"train_accuracy": [], "val_accuracy": []}
 
     # training loop
     for epoch in range(num_epoch):
@@ -72,8 +72,8 @@ def train(
 
             _, preds = torch.max(output, 1)
             acc = (preds == label).float().mean()
-            metrics["train_acc"].append(acc.item())
-            logger.add_scalar("Loss/train", loss.item(), global_step)
+            metrics["train_accuracy"].append(acc.item())
+            logger.add_scalar("train_loss", loss.item(), global_step)
             global_step += 1
 
         # disable gradient computation and switch to evaluation mode
@@ -87,23 +87,23 @@ def train(
                 output = model(img)
                 _, preds = torch.max(output, 1)
                 acc = (preds == label).float().mean()
-                metrics["val_acc"].append(acc.item())
+                metrics["val_accuracy"].append(acc.item())
                 # raise NotImplementedError("Validation accuracy not implemented")
 
         # log average train and val accuracy to tensorboard
-        epoch_train_acc = torch.as_tensor(metrics["train_acc"]).mean()
-        epoch_val_acc = torch.as_tensor(metrics["val_acc"]).mean()
+        epoch_train_acc = torch.as_tensor(metrics["train_accuracy"]).mean()
+        epoch_val_acc = torch.as_tensor(metrics["val_accuracy"]).mean()
 
-        logger.add_scalar("Accuracy/train", epoch_train_acc, epoch)
-        logger.add_scalar("Accuracy/val", epoch_val_acc, epoch)
+        logger.add_scalar("train_accuracy", epoch_train_acc, epoch)
+        logger.add_scalar("val_accuracy", epoch_val_acc, epoch)
         # raise NotImplementedError("Logging not implemented")
 
         # print on first, last, every 10th epoch
         if epoch == 0 or epoch == num_epoch - 1 or (epoch + 1) % 10 == 0:
             print(
                 f"Epoch {epoch + 1:2d} / {num_epoch:2d}: "
-                f"train_acc={epoch_train_acc:.4f} "
-                f"val_acc={epoch_val_acc:.4f}"
+                f"train_accuracy = {epoch_train_acc:.4f} "
+                f"val_accuracy = {epoch_val_acc:.4f}"
             )
 
     # save and overwrite the model in the root directory for grading
