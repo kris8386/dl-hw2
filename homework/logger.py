@@ -7,51 +7,42 @@ import torch.utils.tensorboard as tb
 
 def test_logging(logger: tb.SummaryWriter):
     """
-    Your code here - finish logging the dummy loss and accuracy
-
-    For training, log the training loss every iteration and the average accuracy every epoch
-    Call the loss 'train_loss' and accuracy 'train_accuracy'
-
-    For validation, log only the average accuracy every epoch
-    Call the accuracy 'val_accuracy'
-
-    Make sure the logging is in the correct spot so the global_step is set correctly,
-    for epoch=0, iteration=0: global_step=0
+    Logging function that records training loss, training accuracy, and validation accuracy.
     """
-    # strongly simplified training loop
-    global_step = 0
+
+    global_step = 0  # Ensure correct global step tracking
+
     for epoch in range(10):
         metrics = {"train_accuracy": [], "val_accuracy": []}
 
-        # example training loop
+        # Example training loop
         torch.manual_seed(epoch)
         for iteration in range(20):
             dummy_train_loss = 0.9 ** (epoch + iteration / 20.0)
             dummy_train_accuracy = epoch / 10.0 + torch.randn(10)
 
-            # Log train_loss
-            logger.add_scalar('train_loss', dummy_train_loss, global_step)
-            
-            # Save additional metrics to be averaged
-            metrics["train_accuracy"].append(dummy_train_accuracy.mean().item())
+            # Log training loss at every iteration
+            logger.add_scalar('train_loss', dummy_train_loss, global_step=global_step)
 
-            global_step += 1
+            # Collect training accuracy values
+            avg_train_acc = dummy_train_accuracy.mean().item()
+            metrics["train_accuracy"].append(avg_train_acc)
 
-        # Log average train_accuracy
+            global_step += 1  # Increment global step
+
+        # Log average train_accuracy **with global_step at the last training step of the epoch**
         avg_train_accuracy = sum(metrics["train_accuracy"]) / len(metrics["train_accuracy"])
-        logger.add_scalar('train_accuracy', avg_train_accuracy, epoch)
+        logger.add_scalar('train_accuracy', avg_train_accuracy, global_step=global_step)
 
-        # example validation loop
+        # Example validation loop
         torch.manual_seed(epoch)
         for _ in range(10):
             dummy_validation_accuracy = epoch / 10.0 + torch.randn(10)
-
-             # Save additional metrics to be averaged
             metrics["val_accuracy"].append(dummy_validation_accuracy.mean().item())
 
-        # Log average val_accuracy
+        # Log average validation accuracy **at the end of the epoch**
         avg_val_accuracy = sum(metrics["val_accuracy"]) / len(metrics["val_accuracy"])
-        logger.add_scalar('val_accuracy', avg_val_accuracy, epoch)
+        logger.add_scalar('val_accuracy', avg_val_accuracy, global_step=global_step)
 
 
 if __name__ == "__main__":
